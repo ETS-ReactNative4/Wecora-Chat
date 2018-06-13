@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Wecora",
+    "icon": "./app-icon.png",
+    "version": "1.0.0",
+    "slug": "wecora-app",
+    "sdkVersion": "21.0.0",
+    "android": {
+      "package": "com.wecora.wecorachat"
+    }
+   }
+}
