@@ -40,13 +40,13 @@ export default class WecoraList extends Component {
     else return null
   };
 
-  _keyExtractor = (item, index) => item.id;
+  _keyExtractor = (item, index) => item.id ? item.id : item.name ;
   _renderItem = ({ item }) => {
     const {withIcon} = this.props
     return  (
     <WecoraItem
       icon={withIcon ? 'wecora_chatb' : undefined}
-      badge={withIcon ? item.unread_comments : undefined}
+      badge={withIcon ? item.unread_count : undefined}
       onPress={() => { this.props.onPress(item)}}
       text={item.name}
       />

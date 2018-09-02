@@ -4,6 +4,10 @@ import android.app.Application;
 import android.support.annotation.Nullable;
 
 import com.facebook.react.ReactApplication;
+import io.invertase.firebase.RNFirebasePackage;
+import io.invertase.firebase.RNFirebasePackage;
+import com.rnfs.RNFSPackage;
+import fr.snapp.imagebase64.RNImgToBase64Package;
 import com.imagepicker.ImagePickerPackage;
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
@@ -17,9 +21,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.reactnativenavigation.NavigationApplication;
+import com.alinz.parkerdan.shareextension.SharePackage;
 
 import com.imagepicker.ImagePickerPackage;
 import com.dylanvann.fastimage.FastImageViewPackage;
+
+
+import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
+import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 
 public class MainApplication extends NavigationApplication {
 
@@ -33,9 +42,15 @@ public class MainApplication extends NavigationApplication {
   public List<ReactPackage> createAdditionalReactPackages() {
       return Arrays.<ReactPackage>asList(
             new MainReactPackage(),
+            new RNFirebasePackage(),
+            new RNFSPackage(),
+            new RNFirebaseMessagingPackage(),
+            new RNFirebaseNotificationsPackage(),
+            new RNImgToBase64Package(),
             new ImagePickerPackage(),
             new FastImageViewPackage(),
-            new VectorIconsPackage()      
+            new VectorIconsPackage(),
+            new SharePackage()     
             );
   }
 
@@ -44,5 +59,6 @@ public class MainApplication extends NavigationApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
   }
+  
 
 }

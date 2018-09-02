@@ -8,7 +8,7 @@ import {
   View,
   Button,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator, ToastAndroid,
 } from 'react-native';
 import { inject, observer, } from 'mobx-react/native';
 import CounterView from '../components/Counter';
@@ -46,9 +46,10 @@ const topParams = {
   text: 'It looks like there aren\'t any boards in this project.',
   textDes: undefined,
   action: 'CREATE NEW BOARD',
+  showAction: false
 }
 
-@inject('Boards', 'Projects') @observer
+@inject('Boards', 'Projects', 'Account') @observer
 export default class BoardsScreen extends Component {
   static navigatorStyle = NavBar.Default;
 
@@ -59,61 +60,69 @@ export default class BoardsScreen extends Component {
       username: '',
       password: '',
     }
-
+    topParams.showAction = props.Account.isProfessional
   }
 
   componentWillMount = () => {
-    const { Boards, item } = this.props
+    const { Boards, item, navigator } = this.props
     Boards.fetchList(item)
   }
 
-  
-
   render() {
-    const { Boards, Projects } = this.props;
+    const { Boards, Projects, navigator } = this.props;
     const { listState, list } = Boards;
     const showCreate = listState == stateObs.DONE && list.length == 0
+    // SaveItem.selectedItem ?
+    //   navigator.setTitle({ title: "Select Board" }) 
+    //   : navigator.setTitle({ title: "Boards" }) 
+    
+    // ToastAndroid.show(list
+    //   .map(todo => todo.unread_count)
+    //   .join(", "), ToastAndroid.LONG);
     return (
       <View style={styles.container}>
-        { showCreate &&
+        {showCreate &&
           <View style={styles.top}>
             <WecoraTop icon={topParams.icon}
               text={topParams.text}
               textDes={topParams.textDes}
+              showAction={topParams.showAction}
               action={topParams.action ? {
                 text: topParams.action,
                 onPress: () => Constants.Global.openAddModal(this.props.navigator, true, modalProps.title, modalProps)
               } : undefined} />
           </View>
         }
-        
-          <View style={styles.list}>
-            <WecoraList
-              withIcon
-              list={list}
-              listState={listState}
-              onPress={(item) => {
-                this.props.navigator.push({
-                  ...Constants.Screens.CHATS_SCREEN,
-                  title: item.name,
-                  passProps: { item }
-                });
-              }}
-            />
-          </View>
-        
-        
-        <View style={styles.fab}>
-          <WecoraButton
-            fab
-            iconName={'plus'}
-            dark
-            isLarge
-            onPress={() =>
-              Constants.Global.openAddModal(this.props.navigator, true, modalProps.buttonText, modalProps)}
-          />
 
+        <View style={styles.list}>
+          <WecoraList
+            withIcon
+            list={list.slice()}
+            listState={listState}
+            onPress={(item) => {
+              this.props.navigator.push({
+                ...Constants.Screens.CHATS_SCREEN,
+                title: item.name,
+                passProps: { item }
+              });
+            }}
+          />
         </View>
+
+        {topParams.showAction &&
+          <View style={styles.fab}>
+            <WecoraButton
+              fab
+              iconName={'plus'}
+              dark
+              isLarge
+              onPress={() =>
+                Constants.Global.openAddModal(this.props.navigator, true, modalProps.buttonText, modalProps)}
+            />
+
+          </View>
+        }
+
 
       </View>
     );

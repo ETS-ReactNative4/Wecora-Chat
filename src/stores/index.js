@@ -11,6 +11,7 @@ import Boards from './Boards';
 import Chats from './Chats';
 import Items from './Items';
 import Labels from './Labels';
+import SaveItem from './SaveItem';
 
 const hydrate = create({ storage: AsyncStorage });
 
@@ -23,6 +24,7 @@ const stores = {
   Chats,
   Items,
   Labels,
+  SaveItem,
 }
 
 // you can hydrate stores here with mobx-persist

@@ -28,6 +28,8 @@ const stateObs = Constants.Global.state
 
 
 import ElevatedView from 'react-native-elevated-view'
+import Account from '../../stores/Account';
+import SaveItem from '../../stores/SaveItem';
 
 const modalProps = {
   title: 'Create New Project',
@@ -49,12 +51,13 @@ const topParams = {
   text: 'Client conversations happen within a project\'s Boards',
   textDes: 'It looks like you don\'t have any active Projects',
   action: 'CREATE NEW PROJECT',
+  showAction: false
 }
 
 
 
 
-@inject('Boards', 'Projects', 'Account', 'Chats') @observer
+@inject('Boards', 'Projects', 'Account', 'Chats', 'SaveItem') @observer
 export default class PushedScreen extends Component {
   static navigatorStyle = NavBar.Default;
 
@@ -67,6 +70,8 @@ export default class PushedScreen extends Component {
   //   ]
   // };
 
+
+
   constructor(props) {
     super(props);
 
@@ -74,6 +79,7 @@ export default class PushedScreen extends Component {
       username: '',
       password: '',
     }
+
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     Icon.getImageSource('dot-3', 18).then((menu) => {
       this.props.navigator.setButtons({
@@ -83,11 +89,15 @@ export default class PushedScreen extends Component {
       });
     });
 
+    topParams.showAction = props.Account.isProfessional
 
   }
 
   onNavigatorEvent = (event: { id: string }) => {
-
+    if (event.id == 'willAppear') {
+      const {Projects, navigator } = this.props
+      Projects.fetchList()
+    }
     if (event.type == 'NavBarButtonPress') {
       if (event.id == 'menu') {
         this.ActionSheet.showActionSheet()
@@ -96,16 +106,14 @@ export default class PushedScreen extends Component {
   }
 
 
-
-
-  componentWillMount = () => {
-    this.props.Projects.fetchList()
-    this.props.Chats.subscribeChat()
-  }
-
   render() {
-    const { Counter, Projects, Account, navigator } = this.props;
-    const { listState, list } = Projects;
+    const { Counter, Projects, Account, navigator, SaveItem } = this.props;
+    var { listState, list, myProjects } = Projects;
+    if(SaveItem.selectedItem) {
+      navigator.setTitle({ title: "Select Project" })
+      if(Account.isProfessional)
+        list = myProjects
+    } else { navigator.setTitle({ title: "Projects" })}
     const showCreate = listState == stateObs.DONE && list.length == 0
     const showHint = listState == stateObs.DONE && list.length > 0 && !Account.dismissed
 
@@ -117,6 +125,7 @@ export default class PushedScreen extends Component {
             <WecoraTop icon={topParams.icon}
               text={topParams.text}
               textDes={topParams.textDes}
+              showAction = {topParams.showAction}
               action={topParams.action ? {
                 text: topParams.action,
                 onPress: () => Constants.Global.openAddModal(this.props.navigator, true, modalProps.title, modalProps)
@@ -128,6 +137,7 @@ export default class PushedScreen extends Component {
           <View style={styles.top}>
             <WecoraTop icon={topParams.icon}
               text={topParams.text}
+              showAction = {true}
               action={{
                 text: 'DISMISS',
                 onPress: () => { Account.dismiss() }
@@ -138,7 +148,7 @@ export default class PushedScreen extends Component {
           <View style={styles.list}>
             <WecoraList
               withIcon
-              list={list}
+              list={list.slice()}
               listState={listState}
               onPress={(item) => {
                 this.props.navigator.push({
@@ -156,17 +166,20 @@ export default class PushedScreen extends Component {
           </View>
         }
 
-        <View style={styles.fab}>
-          <WecoraButton
-            fab
-            iconName={'plus'}
-            dark
-            isLarge
-            onPress={() =>
-              Constants.Global.openAddModal(navigator, true, modalProps.buttonText, modalProps)}
-          />
+        {topParams.showAction &&
+          <View style={styles.fab}>
+            <WecoraButton
+              fab
+              iconName={'plus'}
+              dark
+              isLarge
+              onPress={() =>
+                Constants.Global.openAddModal(navigator, true, modalProps.buttonText, modalProps)}
+            />
 
-        </View>
+          </View>
+        }
+
 
         <ActionSheet
           ref={o => this.ActionSheet = o}

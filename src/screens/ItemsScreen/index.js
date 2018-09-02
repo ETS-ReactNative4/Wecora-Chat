@@ -7,7 +7,7 @@ import {
     Text,
     View,
     Button,
-    FlatList,
+    SectionList, Linking,
     ActivityIndicator
 } from 'react-native';
 import { inject, observer, } from 'mobx-react/native';
@@ -45,11 +45,18 @@ export default class ItemsScreen extends Component {
             username: '',
             password: '',
         }
+
+        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
+    onNavigatorEvent = (event: { id: string }) => {
+        if (event.id == 'willAppear') {
+            const { Items, Chats } = this.props
+            Items.fetchList(Chats.parent, itemType.BOARD)
+        }
+    }
     componentWillMount = () => {
-        const { Items, Chats } = this.props
-        Items.fetchList(Chats.parent, itemType.BOARD)
+       
     }
     renderWecoraTop = () => {
         const { Items } = this.props
@@ -63,7 +70,7 @@ export default class ItemsScreen extends Component {
 
             if (Items.list.length == 0) {
                 icon = 'wecora_info'
-                text = 'There are no items in this library'
+                text = 'There are no items on this board'
             }
         }
 
@@ -85,7 +92,7 @@ export default class ItemsScreen extends Component {
                         this.props.navigator.push({
                             ...Constants.Screens.FILTER_SCREEN,
                             title: 'Filter by Label',
-                            passProps: { selectedItemType :itemType.LABEL, select: false}
+                            passProps: { selectedItemType: itemType.LABEL, select: false }
                         });
                     }}
                     text={'Filter by Label'}
@@ -95,21 +102,51 @@ export default class ItemsScreen extends Component {
     }
 
 
-
-
-    render() {
-        const { Items, navigator } = this.props;
-        const showMasonary = Items.list.length > 0
-            && Items.listState == stateObs.DONE
-        return (
-            <View style={styles.container}>
-                {showMasonary && <WecoraMasonary onItemPress={(item) => {
+    sectionList = () => {
+        const { Items, navigator } = this.props
+        renderItem = ({ item, index, section }) => {
+            return (<WecoraItem
+                onPress={() => {
+                    Items.setSelected(item)
                     navigator.push({
                         ...Constants.Screens.ITEM_DETAIL,
                         title: item.name
                     });
-                }} />}
+                }}
+                leftImage={item.media.large}
+                text={item.name}
+                style={styles.item} />)
+        }
+        return (
+            <SectionList
+                renderItem={renderItem}
+                renderSectionHeader={({ section: { title } }) => (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>{title}</Text>
+                    </View>
+                )}
+                sections={Items.itemList}
+                keyExtractor={(item, index) => item + index}
+            />)
+    }
+
+
+    render() {
+        const { Items, navigator, Chats } = this.props;
+        const showMasonary = Items.list.length > 0
+            && Items.listState == stateObs.DONE
+        return (
+            <View style={styles.container}>
+                {showMasonary && this.sectionList()}
                 {!showMasonary && this.renderWecoraTop()}
+                <View style={styles.button}>
+                        <WecoraButton
+                            text={'VIEW BOARD ON THE WEB'}
+                            dark
+                            isLarge
+                            onPress={() => Linking.openURL(Chats.parent.url)}
+                        />
+                    </View>
             </View>
         );
     }
@@ -152,7 +189,7 @@ const styles = StyleSheet.create({
         opacity: Constants.Colors.textOpacity
     },
     button: {
-        position: 'absolute',
+        width: '100%',
         bottom: 0,
         left: 0,
     },
@@ -161,6 +198,15 @@ const styles = StyleSheet.create({
     },
     itemsContainer: {
         margin: 8
+    },
+    sectionTitle: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        opacity: Constants.Colors.textOpacity,
+        padding: 10
+    },
+    section: {
+        backgroundColor: "#ebebeb"
     }
 })
 

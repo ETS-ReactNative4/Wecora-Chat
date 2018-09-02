@@ -28,15 +28,15 @@ export default class WecoraItem extends Component {
     }
 
     render() {
-        const { text, icon, badge, image } = this.props
-
+        const { text, icon, badge, image, leftImage } = this.props
+        const flexDirection = image ? 'column' : 'row' 
         return (
             <ElevatedView elevation={2} style={styles.card}>
                 <TouchableHighlight
                     style={styles.button}
                     onPress={this.props.onPress}
                     underlayColor={Constants.Colors.itemPressedColor}>
-                    <View>
+                    <View style={{flexDirection: flexDirection}}>
                         {image &&
                             <FastImage
                                 style={{height: 90, width: '100%'}}
@@ -47,10 +47,21 @@ export default class WecoraItem extends Component {
                             />
                         }
 
+                         {leftImage &&
+                            <FastImage
+                                style={{height: 80, width: 80 }}
+                                source={{
+                                    uri: leftImage
+                                }}
+                                resizeMode={FastImage.resizeMode.center}
+                            />
+                        }
+
                         <View style={styles.buttonView}>
                             <Text style={styles.text}>{text}</Text>
                             {(!!icon || !!badge) && <WecoraBadge style={styles.badge} icon={icon} badge={badge} />}
                         </View>
+                       
                     </View>
                 </TouchableHighlight>
 
@@ -72,6 +83,7 @@ const styles = StyleSheet.create({
 
     },
     buttonView: {
+        flex: 1,
         marginVertical: 8,
         marginHorizontal: 12,
         flexDirection: 'row',

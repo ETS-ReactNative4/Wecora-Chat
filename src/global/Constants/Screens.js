@@ -10,17 +10,34 @@ export default {
   ADD_SCREEN: {
     screen : 'app.addScreen',
     title  : 'Create New',
+    backButtonTitle: ''
   },
   SEARCH_SCREEN: {
     screen : 'app.searchScreen',
     title  : 'Search',
+    backButtonTitle: ''
+  },
+  SAVE_SCREEN: {
+    screen : 'app.saveScreen',
+    title  : 'Save Image',
+    backButtonTitle: ''
+  },
+  SAVE_BOARD: {
+    screen : 'app.saveBoard',
+    title  : 'Save Image',
+    backButtonTitle: ''
+  },
+  SAVE_ITEM: {
+    screen : 'app.SaveItem',
+    title  : 'Save Image',
+    backButtonTitle: ''
   },
   SIGNIN_SCREEN: {
     screen : 'app.SignInScreen'
   },
   PUSHED_SCREEN: {
     screen : 'app.PushedScreen',
-    title  : 'Wecora Chat',
+    title  : 'Projects',
   },
   BOARDS_SCREEN: {
     screen : 'app.BoardsScreen',
@@ -32,6 +49,15 @@ export default {
   },
   CHATS_SCREEN: {
     screen : 'app.ChatsScreen',
+    backButtonTitle: ''
+  },
+  IMAGE_VIEWER: {
+    screen : 'app.ImageViewer',
+    backButtonTitle: ''
+  },
+  PARSER_SCREEN: {
+    screen : 'app.ParserScreen',
+    title  : 'Select Image',
     backButtonTitle: ''
   },
   ITEMS_SCREEN: {

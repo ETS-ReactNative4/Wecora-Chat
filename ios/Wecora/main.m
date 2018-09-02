@@ -11,8 +11,22 @@
 
 #import "AppDelegate.h"
 
+
 int main(int argc, char * argv[]) {
   @autoreleasepool {
     return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
   }
 }
+
+
+// <key>NSAppTransportSecurity</key>
+// 	<dict>
+// 		<key>NSExceptionDomains</key>
+// 		<dict>
+// 			<key>localhost</key>
+// 			<dict>
+// 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+// 				<true/>
+// 			</dict>
+// 		</dict>
+// 	</dict>

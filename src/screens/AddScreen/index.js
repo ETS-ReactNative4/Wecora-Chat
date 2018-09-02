@@ -7,11 +7,11 @@ import {
     Button,
     StyleSheet,
     KeyboardAvoidingView,
-    Platform
+    Platform, FlatList
 } from 'react-native';
 import { inject, observer } from 'mobx-react/native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
-
+import SnackBar from 'react-native-snackbar-component'
 import NavButtons from '../../global/NavButtons';
 import NavBar from '../../global/NavBar';
 import Constants from '../../global/Constants';
@@ -20,6 +20,7 @@ const stateObs = Constants.Global.state
 import WecoraInput from '../components/WecoraInput';
 import WecoraButton from '../components/WecoraButton';
 import WecoraTop from '../components/WecoraTop';
+import WecoraInitials from '../components/WecoraInitials';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 //import Icon from 'react-native-vector-icons/FontAwesome';
 const Icon = Constants.Images.Icon
@@ -46,25 +47,32 @@ export default class AddScreen extends Component {
 
         this.state = {
             text: '',
-            valid: true
+            valid: true,
+            snackbar: undefined,
         }
 
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.handleVisibilityOfNavButtons();
+        const { title, Chats } = this.props
+        if (title == 'Share Board') {
+            Chats.fetchMembers()
+        }
     }
 
     componentWillUpdate = (nextProps) => {
 
+        const { title, Chats } = nextProps
         if (nextProps[nextProps.storeToObserve].createState == stateObs.DONE
             && !nextProps.actionSuccess.text) {
             setTimeout(() => {
                 nextProps[nextProps.storeToObserve].reset()
                 this.dismiss()
-            }, 2000);
+            }, 1200);
         }
+
     }
 
     onNavigatorEvent = (event: { id: string }) => {
@@ -104,7 +112,6 @@ export default class AddScreen extends Component {
 
     validEmail = (text) => {
 
-       
         if (this.props.email) {
             var valid = this.validateEmail(text)
             this.setState({ text, valid })
@@ -113,9 +120,34 @@ export default class AddScreen extends Component {
         }
     }
 
+
+
+    showMembers = () => {
+        const { title, Chats } = this.props
+        renderMember = ({ item, index }) => {
+            return <WecoraInitials initials={item.initials ? item.initials : 'A'}
+                color={item.accepted || index == 0 ? '#fff' : '#ebebeb'}
+                ellipse={!(item.accepted || index == 0)}
+                avatar={item.profile_pic}
+                textColor={'#000'}
+                onPress = {() => {
+                    this.setState({snackbar: item.full_name ? item.full_name: item.email})
+                    setTimeout(() => {
+                        this.setState({snackbar: undefined})
+                    }, 1500)
+                }} />
+        }
+        return (<FlatList
+            contentContainerStyle={styles.listMembers}
+            data={Chats.members.slice()}
+            renderItem={renderMember}
+            keyExtractor={(item, index) => index + ""}
+        />);
+    }
+
     getForm = () => {
         const { Account, navigator } = this.props
-        const { icon, inputLabel, buttonText, email,
+        const { icon, inputLabel, buttonText, email, title,
             buttonIcon, onChangeText, storeToObserve } = this.props
 
         //console.log(this.props)
@@ -130,11 +162,15 @@ export default class AddScreen extends Component {
                             pressedColor='#EBEBEB'
                             labelColor='#000'
                             inputColor='#000'
-                            keyboardType={email ? 'email-address': undefined}
+                            keyboardType={email ? 'email-address' : undefined}
                             onChangeText={(text) => this.validEmail(text)} />
-                    </View>{
+                    </View>
+                    {
                         !this.state.valid &&
                         <Text style={styles.errorText}><Icon style={styles.errorText} name="wecora_error" /> Not a valid email address</Text>
+                    }
+                    {title == 'Share Board' &&
+                        this.showMembers()
                     }
                 </View>
 
@@ -146,8 +182,8 @@ export default class AddScreen extends Component {
         const { storeToObserve, startMessage,
             loadMessage, errorMessage,
             successMessage, actionText,
-            actionSuccess, actionFailed } = this.props
-
+            actionSuccess, actionFailed, title, Chats } = this.props
+            
         switch (this.props[storeToObserve].createState) {
             case stateObs.START:
                 return {
@@ -167,7 +203,11 @@ export default class AddScreen extends Component {
                     text: successMessage + ' "' + this.state.text + '"',
                     action: {
                         text: actionSuccess.text,
-                        onPress: () => this.props[storeToObserve].reset()
+                        onPress: () => {this.props[storeToObserve].reset()
+                            if(title == 'Share Board') {
+                                Chats.fetchMembers()
+                            }
+                        }
                     }
                 }
             case stateObs.ERROR:
@@ -203,15 +243,26 @@ export default class AddScreen extends Component {
                     keyboardOpeningTime={0}
                     extraHeight={Platform.select({ android: 100 })}>
                     <View style={styles.icon_container}>
-                        <WecoraTop icon={screenState.icon} text={screenState.text} action={screenState.action} />
+                        <WecoraTop icon={screenState.icon}
+                            text={screenState.text}
+                            showAction={true}
+                            action={screenState.action} />
                     </View>
 
                     {this.props[storeToObserve].createState == stateObs.START
                         ? this.getForm() : <View style={styles.holder} />}
 
                 </KeyboardAwareScrollView>
+                <SnackBar visible={this.state.snackbar}
+                    backgroundColor={Constants.Colors.loginBackgroundColor}
+                    accentColor={Constants.Colors.textLight}
+                    messageColor={Constants.Colors.textLight}
+                    textMessage={this.state.snackbar} 
+                    actionHandler={()=>{this.setState({snackbar: undefined})}} actionText="OK"/>
                 {
+                    
                     this.state.valid && this.props[storeToObserve].createState == stateObs.START &&
+                    !this.state.snackbar &&
                     <View style={styles.button}>
                         <WecoraButton
                             text={buttonText.toUpperCase()}
@@ -222,8 +273,8 @@ export default class AddScreen extends Component {
                         />
                     </View>
                 }
-                 {Platform.OS == 'ios' && <KeyboardSpacer />
-                    }
+                {Platform.OS == 'ios' && <KeyboardSpacer />
+                }
             </View>
 
         );
@@ -260,6 +311,11 @@ const styles = StyleSheet.create({
     },
     holder: {
         flex: 0.4
+    },
+    listMembers: {
+        justifyContent: 'flex-start',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
     }
 })
 

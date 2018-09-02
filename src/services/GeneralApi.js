@@ -6,8 +6,22 @@ import stores from '../stores'
 
 class GeneralApi {
 
-  url = "https://api-staging.wecora.com/v1"
+  //url = "https://api-staging.wecora.com/v1"
+  url = "https://api.wecora.com/v1"
 
+  makeRequestCreator = () => {
+    let call;
+    return url => {
+      if (call) {
+        call.cancel("Only one request allowed at a time.");
+      }
+      call = axios.CancelToken.source();
+      return axios.get(url, {
+        cancelToken: call.token
+      });
+    };
+  };
+  get = this.makeRequestCreator();
 
   constructor() {
     axios.interceptors.request.use(request => {
@@ -31,17 +45,23 @@ class GeneralApi {
   }
 
   login = (loginDetails) => {
-    return axios.post('https://api-staging.wecora.com' + '/oauth/token', {
+    return axios.post("https://api.wecora.com" + '/oauth/token', {
       'grant_type': 'password',
       ...loginDetails
     })
   }
 
+  device = (fcmID, platform, starttoken) => {
+    return axios.post(this.url + '/devices' + '?access_token=' + starttoken,
+      { 'device': { 'token': fcmID, 'device_type': platform } }
+    )
+  }
+
   urlTobase64 = (url) => {
     return axios.get(url, {
-        responseType: 'arraybuffer'
-      })
-      //.then(response =>  binaryToBase64(response.data))//Buffer.from(response.data, 'binary').toString('base64'))
+      responseType: 'arraybuffer'
+    })
+    //.then(response =>  binaryToBase64(response.data))//Buffer.from(response.data, 'binary').toString('base64'))
   }
 
   fetchProjects = () => {
@@ -57,13 +77,23 @@ class GeneralApi {
       '/boards' + this.token());
   }
 
-  fetchChats = (boardID) => {
-    return axios(this.url + '/boards/' + boardID + '/comments' +
+  fetchChats = (boardID, page = 1) => {
+    return this.get(this.url + '/boards/' + boardID + '/comments' +
+      this.token() + '&page=' + page);
+  }
+
+  fetchMembers = (boardID) => {
+    return axios(this.url + '/boards/' + boardID + '/members' +
       this.token());
   }
 
   fetchBoardItems = (boardID) => {
     return axios(this.url + '/boards/' + boardID + '/ideas' +
+      this.token());
+  }
+
+  fetchIdea = (ideaId) => {
+    return axios(this.url + '/ideas/' + ideaId +
       this.token());
   }
 
@@ -97,6 +127,37 @@ class GeneralApi {
       });
   }
 
+  editIdea = (ideaId, details, data) => {
+    return axios.put(this.url + '/ideas/' +
+      ideaId + this.token(), {
+        "idea": {
+          "quantity": details.quantity ? details.quantity : 0,
+          "item_attributes": {
+            ...details,
+            "media_url": data
+          }
+        }
+      });
+  }
+
+  createItemBoard = (boardID, details, data) => {
+    return axios.post(this.url + '/boards/' + boardID + '/items' +
+      this.token(), {
+        "item": {
+          ...details,
+          "media_url": data
+        }
+      });
+  }
+  createItemProject = (projectID, details, data) => {
+    return axios.post(this.url + '/projects/' + projectID + '/items' +
+      this.token(), {
+        "item": {
+          ...details,
+          "media_url": data
+        }
+      });
+  }
   createProject = (name) => {
     return axios.post(this.url + '/projects' + this.token() +
       '&project[name]=' + name);

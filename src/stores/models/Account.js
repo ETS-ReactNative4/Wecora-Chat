@@ -9,6 +9,7 @@ class Account {
 
   @persist @observable access_token= 'access_token'
   @persist @observable account_id = 'account_id'
+  @persist @observable account_type = 'account_type'
 }
 
 export default Account;

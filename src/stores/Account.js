@@ -1,11 +1,14 @@
 // @flow
 
-import { observable, action, flow, configure, runInAction } from 'mobx';
+import { observable, action, flow, configure, runInAction, computed } from 'mobx';
 import { persist } from 'mobx-persist';
-
+import {Platform} from 'react-native'
+import firebase from 'react-native-firebase';
 import Models from './models';
 import GeneralApi  from '../services'
 import Constants from '../global/Constants'
+
+import Toast from 'react-native-simple-toast';
 
 const stateObs = Constants.Global.state
 
@@ -27,12 +30,23 @@ class Store {
         const res = await GeneralApi.login({ username, password })
         const access_token = res.data.access_token
         const account_id = res.data.account_id
+        const account_type = res.data.account_type
         var b  = res.data.access_token.charAt(0)
+        const fcmToken = await firebase.messaging().getToken();
+        if(fcmToken){
+          //console.log(fcmToken)
+          //Toast.show(fcmToken)
+          await GeneralApi.device(fcmToken, Platform.OS, access_token)
+        } else {
+          //console.log("foomed")
+          //Toast.show('Unable To fetch token, Please try again!')
+        }
+          
         // after await, modifying state again, needs an actions:
         runInAction(() => {
           this.state = stateObs.DONE
           this.authorized = true;
-          this.current = { username, password, access_token, account_id };
+          this.current = { username, password, access_token, account_id, account_type };
         })
         //console.log(res)
         return this.state
@@ -40,14 +54,14 @@ class Store {
         runInAction(() => {
           this.state = stateObs.ERROR
         })
-        console.log(error.message)
+        console.log(error)
         throw new Error(error)
       }
     } else {
       runInAction(() => {
         this.state = stateObs.ERROR
       })
-      console.log(error.message)
+      console.log(error)
       throw new Error(error)
     }
   }
@@ -72,6 +86,12 @@ class Store {
 
 @action dismiss() {
   this.dismissed = true
+}
+
+@computed get isProfessional() {
+  if(this.current && this.current.account_type)
+    return this.current.account_type == 'Professional'
+  return false 
 }
 
   // login = flow(function* (username: string, password: string) { // <- note the star, this a generator function!

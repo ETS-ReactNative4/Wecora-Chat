@@ -7,20 +7,6 @@
   "ascent": 850,
   "glyphs": [
     {
-      "uid": "95c1ca037379450f8e426c39884f06dc",
-      "css": "wecora_msg",
-      "code": 59393,
-      "src": "custom_icons",
-      "selected": true,
-      "svg": {
-        "path": "M750 50V500C750 527.5 727.5 550 700 550H200L0 750V50C0 22.5 22.5 0 50 0H700C727.5 0 750 22.5 750 50ZM950 200H850V650H200V750C200 777.5 222.5 800 250 800H800L1000 1000V250C1000 222.5 977.5 200 950 200Z",
-        "width": 1000
-      },
-      "search": [
-        "wecora_msg"
-      ]
-    },
-    {
       "uid": "c311c48d79488965b0fab7f9cd12b6b5",
       "css": "left-open",
       "code": 59394,
@@ -264,6 +250,26 @@
       "uid": "d10920db2e79c997c5e783279291970c",
       "css": "dot-3",
       "code": 59412,
+      "src": "entypo"
+    },
+    {
+      "uid": "95c1ca037379450f8e426c39884f06dc",
+      "css": "wecora_msg",
+      "code": 59393,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M750 50V500C750 527.5 727.5 550 700 550H200L0 750V50C0 22.5 22.5 0 50 0H700C727.5 0 750 22.5 750 50ZM950 200H850V650H200V750C200 777.5 222.5 800 250 800H800L1000 1000V250C1000 222.5 977.5 200 950 200Z",
+        "width": 1000
+      },
+      "search": [
+        "wecora_msg"
+      ]
+    },
+    {
+      "uid": "1256e3054823e304d7e452a589cf8bb8",
+      "css": "minus",
+      "code": 59413,
       "src": "entypo"
     },
     {

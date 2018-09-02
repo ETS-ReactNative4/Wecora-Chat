@@ -20,19 +20,21 @@ export default class WecoraTop extends Component {
 
 
     render() {
-        const { icon, text, textDes, action } = this.props;
+        const { icon, text, textDes, action, showAction } = this.props;
 
         return (
             <View style={styles.container}>
                 <View style={styles.iconContainer}>
                     <View style={styles.circle} >
                     {icon != 'spin6' && <Icon name={icon} style={styles.icon} />}
-                    {icon == 'spin6' && <ActivityIndicator size={Platform.OS=='ios'? 1: 80} color={Constants.Colors.loginBackgroundColor} />}
+                    {icon == 'spin6' && 
+                    <ActivityIndicator   style={Platform.OS == "ios" ? styles.indicator: undefined} 
+                    size={Platform.OS=='ios'? 1: 80} color={Constants.Colors.loginBackgroundColor} />}
                     </View>
                 </View>
                 {text && <Text style={styles.text}>{text}</Text>}
                 {textDes && <Text style={styles.text}>{textDes}</Text>}
-                {action && <WecoraButton text={action.text} onPress={action.onPress} transparent dark style={styles.actionButton}/>}
+                {action && showAction && <WecoraButton text={action.text} onPress={action.onPress} transparent dark style={styles.actionButton}/>}
             </View>
         );
     }
@@ -73,5 +75,10 @@ const styles = StyleSheet.create({
     },
     actionButton: {
        
+    },
+    indicator: {
+         transform: [
+            { scale: 3 }
+        ]
     }
 });

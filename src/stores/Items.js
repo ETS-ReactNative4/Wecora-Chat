@@ -1,10 +1,12 @@
 // @flow
 
-import { observable, action, flow } from 'mobx';
+import { observable, action, flow, computed } from 'mobx';
 import GeneralApi from '../services'
 import Constants from '../global/Constants';
 const stateObs = Constants.Global.state
 const itemType = Constants.Global.itemType
+
+import {ToastAndroid} from "react-native"
 
 
 class Store {
@@ -14,12 +16,13 @@ class Store {
     @observable errors = undefined;
     @observable parent = undefined;
     @observable parentType = itemType.USER;
-    @observable list = []
+    @observable.shallow list = []
     @observable selectedItem = undefined
 
 
     fetchList = flow(function* (parent, parentType) {
-        if (this.parent !== parent) {
+        //if (this.parent !== parent) 
+        {
             this.parent = parent
             this.list = []
             this.listState = stateObs.LOADING
@@ -36,13 +39,28 @@ class Store {
                         resp = yield GeneralApi.fetchBoardItems(this.parent.id)
                         //console.log(resp)
                         reslist = resp.data.ideas.map(idea => {
+                            const media = idea.item && idea.item.media ? idea.item.media : { large: 'https://source.unsplash.com/random' }
                             return ({
                                 quantity: idea.quantity,
                                 ...idea.item,
+                                media: media,
                                 board: idea.board.name,
-                                project: idea.board.project.name
+                                project: idea.board.project.name,
+                                group: idea.group,
+                                ideaId: idea.id
                             })
                         })
+                        reslist = reslist.reduce((r, a) => {
+                            r[a.group.name] = r[a.group.name] || [];
+                            r[a.group.name].push(a);
+                            return r;
+                        }, Object.create(null));
+                        const tempList = []
+                        for (const [key, value] of Object.entries(reslist)) {
+                            tempList.push({ title: key, data: value })
+                        }
+                        reslist = tempList
+                        //console.log(reslist)
                         break;
                     case itemType.LABEL:
                         resp = yield GeneralApi.fetchLabelItems(this.parent.id)
@@ -61,11 +79,7 @@ class Store {
 
                 }
                 this.listState = stateObs.DONE
-                this.list = reslist.map((obj) => {
-                    return ({
-                        ...obj, dummyImage: 'https://images.unsplash.com/photo-1526922289011-a875fbd2fb0d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max&ixid=eyJhcHBfaWQiOjF9&s=31f596b4bb5ed1b8233c6b723019f96c'//'https://source.unsplash.com/random'
-                    })
-                })
+                this.list = reslist
                 //console.log(this.list)
             } catch (error) {
                 this.listState = stateObs.ERROR
@@ -73,6 +87,27 @@ class Store {
             }
         }
     })
+
+    fetchIdea = flow(function* (id) {
+        try {
+            const resp = yield GeneralApi.fetchIdea(id)
+            const idea = resp.data
+            //console.log(idea)
+            const media = idea.item && idea.item.media ? idea.item.media : { large: 'https://source.unsplash.com/random' }
+            this.setSelected({
+                quantity: idea.quantity,
+                ...idea.item,
+                media: media,
+                board: idea.board.name,
+                project: idea.board.project.name,
+                group: idea.group,
+                ideaId: idea.id
+            })
+        } catch (error) {
+            console.log(error.message)
+        }
+    })
+
 
     create = flow(function* (name) {
         this.createState = stateObs.LOADING
@@ -88,7 +123,35 @@ class Store {
         }
     })
 
+    setEdited = flow(function* (idea) {
 
+        try {
+            const media = idea.item && idea.item.media ? idea.item.media : { large: 'https://source.unsplash.com/random' }
+            const temp = {
+                quantity: idea.quantity,
+                ...idea.item,
+                media: media,
+                board: idea.board.name,
+                project: idea.board.project.name,
+                group: idea.group,
+                ideaId: idea.id
+            }
+            // var listTemp = this.itemList
+            // for (const [i, group] of listTemp.entries()) {
+            //     for (const [j, itemea] of group.data.entries()) {
+            //         if (idea.id == itemea.ideaId) {
+            //             listTemp[i].data[j] = temp
+            //             this.list = [...listTemp]
+            //             ToastAndroid.show(this.list[i].data[j].name, ToastAndroid.LONG)
+            //         }
+            //     }
+            // }
+            this.setSelected(temp)
+        } catch(e) {
+            ToastAndroid.show(e.message, ToastAndroid.LONG)
+        }
+        
+    })
 
     @action reset() {
         this.createState = stateObs.START
@@ -99,6 +162,12 @@ class Store {
     }
     @action clearSelected() {
         this.selectedItem = undefined
+    }
+
+    @computed get itemList(){
+        return this.list.map((v)=>{
+            return { title: v.title, data: v.data.slice() }
+        }).slice();// And slice the listData
     }
 }
 

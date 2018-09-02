@@ -44,9 +44,17 @@ export default class WecoraInput extends Component {
     render() {
         const { hidden, label, onChangeText, keyboardType,
             value, returnKeyType, onSubmitEditing } = this.props;
+        let labelStyle = styles.inputLabelText
+        let inputStyle = styles.inputStyle
+        let formItemStyle = styles.formInputItem
+        if (Platform.OS == 'ios') {
+            labelStyle = styles.iosinputLabelText
+            inputStyle = styles.iosinputStyle
+            formItemStyle = styles.iosformInputItem
+        }
         return (
-            <View style={[styles.formInputItem, { backgroundColor: this.state.backgroundColor }]}>
-                <Text style={[styles.inputLabelText, { color: this.state.labelColor }]}>{label} </Text>
+            <View style={[formItemStyle, { backgroundColor: this.state.backgroundColor }]}>
+                <Text style={[labelStyle, { color: this.state.labelColor }]}>{label} </Text>
                 <TextInput secureTextEntry={hidden}
                     autoCapitalize='none'
                     autoCorrect={false}
@@ -55,10 +63,11 @@ export default class WecoraInput extends Component {
                     onSubmitEditing={onSubmitEditing}
                     underlineColorAndroid='transparent'
                     onChangeText={onChangeText}
-                    blurOnSubmit={ false }
+                    value={value}
+                    blurOnSubmit={false}
                     onBlur={this.onBlur} onFocus={this.onFocus}
                     ref={(input) => this.textInput = input}
-                    style={[styles.inputStyle, { color: this.state.inputColor }]} />
+                    style={[inputStyle, { color: this.state.inputColor }]} />
             </View>
         );
     }
@@ -68,7 +77,7 @@ const styles = StyleSheet.create({
 
     inputLabelText: {
         alignSelf: 'flex-start',
-        fontSize: 12,
+        fontSize: 11,
         opacity: Constants.Colors.textOpacity
     },
     formInputItem: {
@@ -81,9 +90,28 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
     inputStyle: {
-        color: "red",
+        fontSize: 13,
+        height: 45,
+        flex: 1,
+        paddingBottom: 0
+    },
+    iosinputLabelText: {
+        alignSelf: 'flex-start',
         fontSize: 14,
-        height: 30,
+        opacity: Constants.Colors.textOpacity
+    },
+    iosformInputItem: {
+        flexDirection: 'column',
+        height: 60,
+        justifyContent: 'center',
+        marginBottom: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 2,
+    },
+    iosinputStyle: {
+        fontSize: 16,
+        height: 50,
         flex: 1,
         paddingBottom: 0
     }

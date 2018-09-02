@@ -1,6 +1,11 @@
 package com.wecora;
 
 // import com.facebook.react.ReactActivity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+
 import com.reactnativenavigation.controllers.SplashActivity;
 import com.imagepicker.permissions.OnImagePickerPermissionsCallback; // <- add this import
 import com.facebook.react.modules.core.PermissionListener;

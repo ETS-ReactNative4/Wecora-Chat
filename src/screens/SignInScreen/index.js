@@ -9,7 +9,7 @@ import {
     Image,
     KeyboardAvoidingView,
     ActivityIndicator,
-    Alert, Keyboard,
+    Alert, Keyboard, Platform,
     TouchableWithoutFeedback
 } from 'react-native';
 import { inject, observer } from 'mobx-react/native';
@@ -20,6 +20,8 @@ import Constants from '../../global/Constants';
 const Icon = Constants.Images.Icon
 import WecoraInput from '../components/WecoraInput';
 import WecoraButton from '../components/WecoraButton';
+import KeyboardSpacer from 'react-native-keyboard-spacer';
+
 const stateObs = Constants.Global.state
 
 type State = {
@@ -45,7 +47,7 @@ const modalProps = {
 
 
 
-@inject('App', 'Account') @observer
+@inject('App', 'Account', 'Chats') @observer
 export default class SignInScreen extends Component {
     //static navigatorButtons = NavButtons.WithSideMenu;
     static navigatorStyle = NavBar.Hidden;
@@ -60,6 +62,8 @@ export default class SignInScreen extends Component {
             // password: 'wecora2018',
             // username: 'jlippiner@wecora.com',
             // password: 'testtest',
+            // username: 'saas.exp8@gmail.com',
+            // password: 'wecora2018',
             username: '',
             password: ''
         }
@@ -112,8 +116,10 @@ export default class SignInScreen extends Component {
                     isLarge
                     onPress={async () => {
                         try {
+                            const {Chats, navigator} = this.props
                             var b = await Account.login(username, password)
-                            this.props.navigator.resetTo({ ...Constants.Screens.PUSHED_SCREEN })
+                            Chats.subscribeChat()
+                            navigator.resetTo({ ...Constants.Screens.PUSHED_SCREEN })
                         } catch (err) {
                             this.showAlert(err)
                         }
@@ -149,7 +155,7 @@ export default class SignInScreen extends Component {
 
         return (
             <TouchableWithoutFeedback style={styles.container} onPress={() => {
-                console.log('keyboard')
+              
                 Keyboard.dismiss()}}>
             <View style={styles.container} >
                 <View style={styles.icon_container}>
@@ -165,6 +171,7 @@ export default class SignInScreen extends Component {
                     </View>}
                 {Account.state != stateObs.LOADING && this.getForm()}
 
+            {Platform.OS == 'ios' && <KeyboardSpacer />}
             </View>
             </TouchableWithoutFeedback>
         );

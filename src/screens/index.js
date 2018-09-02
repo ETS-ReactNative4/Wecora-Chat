@@ -19,6 +19,11 @@ import SearchScreen from './SearchScreen';
 import ItemDetail from './ItemDetail';
 import FilterScreen from './FilterScreen';
 import FilterItemsScreen from './FilterItemsScreen';
+import SaveScreen from './SaveScreen';
+import SaveItem from './SaveItem';
+import SaveBoard from './SaveBoard';
+import ImageViewer from './ImageViewer';
+import ParserScreen from './ParserScreen';
 
 
 export function registerScreens(store: {}, Provider: {}) {
@@ -39,5 +44,10 @@ export function registerScreens(store: {}, Provider: {}) {
   Navigation.registerComponent(Constants.Screens.ITEM_DETAIL.screen, () => ItemDetail, store, Provider);
   Navigation.registerComponent(Constants.Screens.FILTER_SCREEN.screen, () => FilterScreen, store, Provider);
   Navigation.registerComponent(Constants.Screens.FILTER_ITEMS_SCREEN.screen, () => FilterItemsScreen, store, Provider);
+  Navigation.registerComponent(Constants.Screens.SAVE_SCREEN.screen, () => SaveScreen, store, Provider);
+  Navigation.registerComponent(Constants.Screens.SAVE_BOARD.screen, () => SaveBoard, store, Provider);
+  Navigation.registerComponent(Constants.Screens.SAVE_ITEM.screen, () => SaveItem, store, Provider);
+  Navigation.registerComponent(Constants.Screens.IMAGE_VIEWER.screen, () => ImageViewer, store, Provider);
+  Navigation.registerComponent(Constants.Screens.PARSER_SCREEN.screen, () => ParserScreen, store, Provider);
 
 }

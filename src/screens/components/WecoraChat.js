@@ -7,13 +7,15 @@ import {
     Text,
     View,
     Button,
-    Platform, Image
+    Platform, Image,
+    TouchableHighlight, TouchableOpacity
 } from 'react-native';
 
 import FastImage from 'react-native-fast-image'
 
 import Constants from '../../global/Constants';
 import WecoraButton from './WecoraButton'
+import WecoraInitials from './WecoraInitials'
 const Icon = Constants.Images.Icon
 
 import { inject, observer } from 'mobx-react/native';
@@ -33,70 +35,123 @@ export default class WecoraChat extends Component {
     }
 
     renderImageView = () => {
-        const { comment, Account } = this.props
+        const { comment, Account, onMenuPress, onImagePress } = this.props
+        const isMine = Account.current.account_id == comment.commentor_account_id
         if (comment.attachments &&
-            comment.attachments[0] && 
+            comment.attachments[0] &&
             comment.attachments[0].image &&
-            comment.attachments[0].image.thumb) { 
+            comment.attachments[0].image.large) {
             return (
-                <View style={styles.image}>
-                <Image style={{alignSelf: 'center'}} resizeMode={'cover'} source={require('../../../resources/images/wecora_icon_trans.png')}/>
-            <FastImage
-                style={StyleSheet.absoluteFill}
-                source={{
-                    uri: comment.attachments[0].image.large,
-                }}
-                resizeMode={FastImage.resizeMode.cover}
-            />
-            </View>
+                <TouchableOpacity style={{ width: '100%' }}
+                    onPress={() => onImagePress(comment.attachments[0].image.large)}>
+                    <View style={styles.image}>
+                    {
+                        comment.loading ? <Image style={[styles.image, { alignSelf: 'center' }]}
+                        resizeMode={'cover'}
+                        source={{ uri: comment.attachments[0].image.large}} /> 
+                        :  <FastImage
+                        style={styles.image}
+                        source={{
+                            uri: comment.attachments[0].image.large,
+                        }}
+                        resizeMode={FastImage.resizeMode.cover}
+                    />
+                    }
+                        
+                    </View>
+
+                </TouchableOpacity >
 
             )
         }
         else return null
     }
 
+    menuBtn = (co) => {
+        const { comment, Account, onMenuPress } = this.props
+        if (comment.attachments &&
+            Account.current.account_id == comment.board.owner.account_id &&
+            comment.attachments[0] &&
+            comment.attachments[0].image &&
+            comment.attachments[0].image.large) {
+            return (
+
+                <View style={{ padding: 8, flex: 1, }}>
+                    <TouchableHighlight
+                        style={styles.menuBtn}
+                        underlayColor={'rgba(0,0,0,0.5)'}
+                        onPress={() => onMenuPress(comment.attachments[0].image)}
+                    >
+                        <Icon name={'dot-3'} size={18} color={co} />
+                    </TouchableHighlight>
+                </View>
+
+            )
+        }
+    }
+
+    savedToBoard = () => {
+        try {
+            const { comment } = this.props
+            if(comment.attachments[0].image.idea_id)
+              return <Text style={styles.chatInfoName}>Saved to board</Text>
+            return undefined
+        } catch(e) {
+            return undefined
+        }
+        
+    }
+
     render() {
 
-        const { comment, Account } = this.props
+        const { comment, Account, onMenuPress } = this.props
         const isMine = Account.current.account_id == comment.commentor_account_id
-        const isIos = Platform.OS == 'ios'
         return (
             <View>
                 {!isMine ?
                     <View style={styles.talkBubble}>
                         <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
-                            <View style={styles.circle}>
-                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{comment.comment_by.charAt(0)}</Text>
-                            </View>
+                            <WecoraInitials
+                                initials={comment.comment_by ? comment.comment_by.charAt(0) : 'A'} />
+
                             <View style={{ flexDirection: 'column', width: '85%' }}>
                                 <View style={{ flexDirection: 'row', flex: 1 }}>
 
-                                <ElevatedView elevation={0} style={isIos ? styles.talkBubbleTriangleIos : styles.talkBubbleTriangle} />
+                                    <ElevatedView elevation={0} style={styles.talkBubbleTriangle} />
                                     <ElevatedView elevation={0} style={styles.talkBubbleSquare}>
                                         {this.renderImageView()}
-                                        <Text style={styles.talk}>{comment.comment} </Text>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <Text style={styles.talk}>{comment.comment} </Text>
+                                            {this.menuBtn('#000')}
+                                        </View>
                                     </ElevatedView>
-                                   
+
                                 </View>
                                 <View style={styles.chatInfo}>
                                     <Text style={styles.chatInfoName}>{comment.comment_by} </Text>
                                     <Text style={styles.chatInfoName}>{comment.created_at} </Text>
+                                    {this.savedToBoard()}
                                 </View>
                             </View>
                         </View>
                     </View> :
-                    <View style={[styles.talkBubbleRev, { opacity: comment.loading ? 0.2: 1}]}>
+                    <View style={[styles.talkBubbleRev, { opacity: comment.loading ? 0.2 : 1 }]}>
                         <View style={{ flex: 1, flexDirection: 'row-reverse', justifyContent: 'flex-end' }}>
-                        <ElevatedView elevation={0} style={styles.talkBubbleTriangleRev} />
+                            <ElevatedView elevation={0} style={styles.talkBubbleTriangleRev} />
                             <ElevatedView elevation={0} style={styles.talkBubbleSquareRev}>
                                 {this.renderImageView()}
-                                <Text style={styles.talkRev}>{comment.comment} </Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text style={styles.talkRev}>{comment.comment} </Text>
+                                    {comment.loading ? undefined : this.menuBtn('#000')}
+                                </View>
                             </ElevatedView>
-                            
+
                         </View>
                         <View style={styles.chatInfoRev}>
                             {/* <Text style={styles.chatInfoName}>{comment.comment_by} </Text> */}
+                            {this.savedToBoard()}
                             <Text style={styles.chatInfoNameRev}>{comment.created_at} </Text>
+                           
                         </View>
                     </View>
                 }
@@ -121,17 +176,17 @@ const styles = StyleSheet.create({
     talkRev: {
         padding: 16,
         fontSize: 16,
-        color: '#fff',
-
+        color: "#50555C",
+        flex: 9
     },
     chatInfoRev: {
         marginVertical: 4,
         marginHorizontal: 15,
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
     },
     talkBubbleSquareRev: {
-        backgroundColor: '#E55A4F',
+        backgroundColor: '#C8DEF3',
         borderRadius: 2,
         flex: 9,
     },
@@ -143,7 +198,7 @@ const styles = StyleSheet.create({
         borderLeftWidth: 15,
         borderBottomWidth: 15,
         borderLeftColor: 'transparent',
-        borderBottomColor: '#E55A4F',
+        borderBottomColor: '#C8DEF3',
         transform: [
             { rotate: '180deg' }
         ],
@@ -206,14 +261,15 @@ const styles = StyleSheet.create({
 
     talk: {
         padding: 16,
-        opacity: Constants.Colors.textOpacity,
-        fontSize: 16
+        color: "#50555C",
+        fontSize: 16,
+        flex: 9
     },
     chatInfo: {
         marginVertical: 4,
         marginHorizontal: 15,
         flexDirection: 'row',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
     },
     circle: {
         marginLeft: 8,
@@ -236,5 +292,15 @@ const styles = StyleSheet.create({
     image: {
         height: 160,
         width: '100%'
+    },
+    menuBtn: {
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 30,
+        height: 30,
+        backgroundColor: 'rgba(0,0,0,0)',
+        borderRadius: 30,
     }
 });
